@@ -49,27 +49,24 @@ def get_schoolkid(name_schoolkid):
 
 def fix_marks(name):
     schoolkid = get_schoolkid(name)
-    bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3])
-    for bad_mark in bad_marks:
-        bad_mark.points = 5
-        bad_mark.save()
+    bad_marks = Mark.objects.filter(schoolkid=schoolkid, points__in=[2, 3]).update(point=5)
 
 
 def remove_chastisements(name):
     schoolkid = get_schoolkid(name)
-    chastisement = Chastisement.objects.filter(schoolkid=schoolkid)
-    chastisement.delete()
+    chastisements = Chastisement.objects.filter(schoolkid=schoolkid)
+    chastisements.delete()
 
 
 def create_commendation(name, subject_title):
     schoolkid = get_schoolkid(name)
-    subject = Subject.objects.get(title=subject_title, year_of_study=schoolkid.year_of_study)
     lesson = Lesson.objects.filter(
-        subject=subject,
+        subject__title=subject_title,
         year_of_study=schoolkid.year_of_study,
         group_letter=schoolkid.group_letter
     ).order_by('-date').first()
     teacher = lesson.teacher
+    subject = lesson.subject
     commendation = Commendation.objects.create(
         text=random.choice(COMMENDATIONS),
         created=timezone.now().date(),
